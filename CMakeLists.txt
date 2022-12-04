@@ -30,7 +30,6 @@ add_executable(${PROJECT_NAME}
     src/realtime.cpp
     src/mainwindow.cpp
     src/settings.cpp
-    src/utils/scenefilereader.cpp
     src/utils/sceneparser.cpp
     src/shapes/cube.cpp
 
@@ -38,7 +37,6 @@ add_executable(${PROJECT_NAME}
     src/realtime.h
     src/settings.h
     src/utils/scenedata.h
-    src/utils/scenefilereader.h
     src/utils/sceneparser.h
     src/utils/shaderloader.h
     src/shapes/cube.h
