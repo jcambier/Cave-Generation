@@ -29,6 +29,7 @@ private:
     void createLine(glm::vec3 point_1, glm::vec3 point_2, int radius);
     std::vector<RenderShapeData> cube_data;
     std::map<std::vector<int>, bool> isCovered;
+    std::map<std::vector<int>, bool> isBlock;
 public:
     // Parse the scene and store the results in renderData.
     // @param filepath    The path of the scene file to load.

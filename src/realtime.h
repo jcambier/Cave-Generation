@@ -66,6 +66,7 @@ private:
     GLuint m_vao;    // Stores id of VAO
     GLuint m_fullscreen_vbo;
     GLuint m_fullscreen_vao;
+    GLuint instance_vbo;
 
     Cube m_cube; // Stores cube mesh
 
@@ -77,4 +78,6 @@ private:
     void renderShapes();
     void makeFBO();
     void paintTexture(GLuint texture);
+    void createOffsets();
+    glm::vec3 translations[100000];
 };

@@ -112,22 +112,40 @@ void Realtime::initializeGL() {
     glBindVertexArray(0);
     renderData.cameraData.updateViewMatrix(renderData.cameraData.up,
             renderData.cameraData.look, renderData.cameraData.pos);
+    createOffsets();
 }
 
 void Realtime::handleObjects() {
-    std::vector<float>* vbo_sphere;
     std::vector<float>* vbo_cube;
-    std::vector<float>* vbo_cone;
-    std::vector<float>* vbo_cylinder;
     //Create 4 vbos -- one for each shape
     vbo_cube = m_cube.generateShape();
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 256, &translations[0], GL_STATIC_DRAW);
         glBufferData(GL_ARRAY_BUFFER,vbo_cube->size() * sizeof(GLfloat),vbo_cube->data(), GL_STATIC_DRAW);
         glBindVertexArray(m_vao);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,6*sizeof(GLfloat),reinterpret_cast<void *>(0));
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,6*sizeof(GLfloat),reinterpret_cast<void*>(sizeof(GLfloat)*3));
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glGenBuffers(1, &instance_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, instance_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 100, &translations[0], GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, instance_vbo);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glVertexAttribDivisor(2, 1);
+}
+
+void Realtime::createOffsets() {
+    int index = 0;
+    for (RenderShapeData shape: renderData.shapes) {
+        translations[index] = shape.primitive.position;
+        index = index + 1;
+    }
 }
 
 void Realtime::loadLights() {
@@ -174,7 +192,12 @@ void Realtime::renderShapes() {
                               0,1,0,0,
                               0,0,1,0,
                               0,0,0,1);
-    for(RenderShapeData shape: renderData.shapes) {
+    RenderShapeData shape = renderData.shapes[0];
+    for (int i = 0; i < renderData.shapes.size(); i += 256) {
+        for (unsigned int j = 0; j < 256; j++) {
+            std::string arg = "offsets[" + std::to_string(j) + "]";
+            glUniform3fv(glGetUniformLocation(m_shader, arg.data()), 1, &translations[i + j][0]);
+        }
         glBindVertexArray(m_vao);
         ctm = shape.ctm;
         // Pass model matrix to shader program
@@ -209,20 +232,24 @@ void Realtime::renderShapes() {
         glm::vec4 world_cam = renderData.cameraData.pos;
         GLint m_cam_loc = glGetUniformLocation(m_shader, "cam_pos");
         glUniform4fv(m_cam_loc, 1, &world_cam[0]);
+        glUniform3fv(glGetUniformLocation(m_shader, "world_pos"), 1, &shape.primitive.position[0]);
+
 
         // Draw Command
-        glDrawArrays(GL_TRIANGLES, 0, m_cube.generateShape()->size() / 3);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, m_cube.generateShape()->size() / 3, 256);
 
         // Unbind VBO
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+    int egg = 3;
+
 }
 
 void Realtime::paintGL() {
     m_cube.updateParams(2);
     // Generate VAOs and VBOs
-    glGenBuffers(4, &m_vbo);
-    glGenVertexArrays(4, &m_vao);
+    glGenBuffers(1, &m_vbo);
+    glGenVertexArrays(1, &m_vao);
     handleObjects();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Create shader program
@@ -263,6 +290,7 @@ void Realtime::settingsChanged() {
     SceneParser parser;
     parser.parse(renderData, settings.shapeParameter1);
     renderData.cameraData.updateProjMatrix(settings.nearPlane, settings.farPlane);
+    createOffsets();
     m_proj = renderData.cameraData.m_proj;
     m_cube.updateParams(2);
     update(); // asks for a PaintGL() call to occur
