@@ -9,6 +9,7 @@
 #include "utils/shaderloader.h"
 #include <string>
 #include <glm/gtx/string_cast.hpp>
+#include <unistd.h>
 
 // ================== Project 5: Lights, Camera
 
@@ -112,6 +113,7 @@ void Realtime::initializeGL() {
     glBindVertexArray(0);
     renderData.cameraData.updateViewMatrix(renderData.cameraData.up,
             renderData.cameraData.look, renderData.cameraData.pos);
+    m_bezier.setCameraData(&renderData.cameraData);
 }
 
 void Realtime::handleObjects() {
@@ -265,6 +267,13 @@ void Realtime::settingsChanged() {
     renderData.cameraData.updateProjMatrix(settings.nearPlane, settings.farPlane);
     m_proj = renderData.cameraData.m_proj;
     m_cube.updateParams(2);
+    if (settings.extraCredit3) {
+        for (float t = 0; t < 1.0; t += 0.01) {
+            //renderData.cameraData.pos = glm::vec4(1.0, t, 1.0, 1.0);
+            m_bezier.updatePos(glm::vec4(0.0, 0.0, 0.0, 1.0), glm::vec4(10.0, 20.0, 0.0, 1.0), glm::vec4(40.0, 20.0, 0.0, 1.0), glm::vec4(50.0, 0.0, 0.0, 1.0), t);
+            update();
+        }
+    }
     update(); // asks for a PaintGL() call to occur
 }
 

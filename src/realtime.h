@@ -7,6 +7,7 @@
 #endif
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include "utils/bezier.h"
 
 #include <unordered_map>
 #include <QElapsedTimer>
@@ -77,4 +78,6 @@ private:
     void renderShapes();
     void makeFBO();
     void paintTexture(GLuint texture);
+
+    Bezier m_bezier;
 };
