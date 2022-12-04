@@ -4,5 +4,6 @@
 
 class Bezier {
 public:
-    Bezier(SceneCameraData cameraData)
+    Bezier(SceneCameraData *cameraData);
+    SceneCameraData *m_cameraData;
 };
