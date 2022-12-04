@@ -33,6 +33,7 @@ add_executable(${PROJECT_NAME}
     src/utils/scenefilereader.cpp
     src/utils/sceneparser.cpp
     src/shapes/cube.cpp
+    src/utils/bezier.cpp
 
     src/mainwindow.h
     src/realtime.h
@@ -42,6 +43,7 @@ add_executable(${PROJECT_NAME}
     src/utils/sceneparser.h
     src/utils/shaderloader.h
     src/shapes/cube.h
+    src/utils/bezier.h
 )
 
 # GLM: this creates its library and allows you to `#include "glm/..."`
@@ -68,6 +70,8 @@ qt6_add_resources(${PROJECT_NAME} "Resources"
     FILES
         resources/shaders/default.frag
         resources/shaders/default.vert
+        resources/shaders/texture.frag
+        resources/shaders/texture.vert
 )
 
 # GLEW: this provides support for Windows (including 64-bit)
