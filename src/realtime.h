@@ -80,4 +80,5 @@ private:
     void paintTexture(GLuint texture);
 
     Bezier m_bezier;
+    float m_bezierInc = 0.0; // Used to test functionality of curve
 };

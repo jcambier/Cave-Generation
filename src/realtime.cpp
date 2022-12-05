@@ -267,13 +267,16 @@ void Realtime::settingsChanged() {
     renderData.cameraData.updateProjMatrix(settings.nearPlane, settings.farPlane);
     m_proj = renderData.cameraData.m_proj;
     m_cube.updateParams(2);
+
+    /* Testing Bezier (can delete later) */
     if (settings.extraCredit3) {
         for (float t = 0; t < 1.0; t += 0.01) {
-            //renderData.cameraData.pos = glm::vec4(1.0, t, 1.0, 1.0);
             m_bezier.updatePos(glm::vec4(0.0, 0.0, 0.0, 1.0), glm::vec4(10.0, 20.0, 0.0, 1.0), glm::vec4(40.0, 20.0, 0.0, 1.0), glm::vec4(50.0, 0.0, 0.0, 1.0), t);
             update();
         }
     }
+    /* Testing Bezier (can delete later) */
+
     update(); // asks for a PaintGL() call to occur
 }
 
@@ -444,6 +447,12 @@ void Realtime::timerEvent(QTimerEvent *event) {
     if (m_keyMap[Qt::Key_Control]) {
         press_ctrl(deltaTime);
     }
+    /* Testing Bezier (can delete later) */
+    else if (m_keyMap[Qt::Key_F]) {
+        m_bezier.updatePos(glm::vec4(-6.0, 4.0, 4.0, 1.0), glm::vec4(-4.0, 5.0, 4.0, 1.0), glm::vec4(-2.0, 5.0, 4.0, 1.0), glm::vec4(0.0, 1.0, 0.0, 1.0), m_bezierInc);
+        m_bezierInc += 0.01;
+    }
+    /* Testing Bezier (can delete later) */
 
     update(); // asks for a PaintGL() call to occur
 }
