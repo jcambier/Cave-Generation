@@ -52,6 +52,10 @@ void Realtime::initializeGL() {
 
     m_timer = startTimer(1000/60);
     m_elapsedTimer.start();
+    SceneParser parser;
+    renderData.cameraData.pos = glm::vec4(0.f, 0.f, 0.f, 1.f);
+    renderData.cameraData.look = glm::vec4(parser.point_2 - parser.point_1, 0.f);
+    renderData.cameraData.up = glm::vec4(0.f, 1.f, 0.f, 0.f);
 
     // Initializing GL.
     // GLEW (GL Extension Wrangler) provides access to OpenGL functions.
@@ -120,7 +124,7 @@ void Realtime::handleObjects() {
     //Create 4 vbos -- one for each shape
     vbo_cube = m_cube.generateShape();
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 256, &translations[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numInstances, &translations[0], GL_STATIC_DRAW);
         glBufferData(GL_ARRAY_BUFFER,vbo_cube->size() * sizeof(GLfloat),vbo_cube->data(), GL_STATIC_DRAW);
         glBindVertexArray(m_vao);
         glEnableVertexAttribArray(0);
@@ -192,8 +196,8 @@ void Realtime::renderShapes() {
                               0,1,0,0,
                               0,0,1,0,
                               0,0,0,1);
-    for (int i = 0; i < renderData.shapes.size(); i += 256) {
-        for (unsigned int j = 0; j < 256; j++) {
+    for (int i = 0; i < renderData.shapes.size(); i += numInstances) {
+        for (unsigned int j = 0; j < numInstances; j++) {
             std::string arg = "offsets[" + std::to_string(j) + "]";
             glUniform3fv(glGetUniformLocation(m_shader, arg.data()), 1, &translations[i + j][0]);
         }
@@ -224,7 +228,7 @@ void Realtime::renderShapes() {
         glm::vec4 world_cam = renderData.cameraData.pos;
         GLint m_cam_loc = glGetUniformLocation(m_shader, "cam_pos");
         // Draw Command
-        glDrawArraysInstanced(GL_TRIANGLES, 0, m_cube.generateShape()->size() / 3, 256);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, m_cube.generateShape()->size() / 3, numInstances);
         // Unbind VBO
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }

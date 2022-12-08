@@ -5,14 +5,14 @@
 #include <memory>
 #include <iostream>
 
-glm::vec3 SceneParser::getWorldCoord(glm::vec3 origin, glm::vec3 xyz, int radius) {
+glm::vec3 SceneParser::getWorldCoord(glm::vec3 origin, glm::vec3 xyz, float radius) {
     int world_x = origin[0] - radius + xyz[0];
     int world_y = origin[1] - radius + xyz[1];
     int world_z = origin[2] - radius + xyz[2];
     return glm::vec3(world_x, world_y, world_z);
 }
 
-bool SceneParser::inSphere(glm::vec3 origin, int radius, glm::vec3 xyz) {
+bool SceneParser::inSphere(glm::vec3 origin, float radius, glm::vec3 xyz) {
     if (glm::distance(origin, xyz) < radius - 1.0) {
         return true;
     } else return false;
@@ -26,7 +26,7 @@ RenderShapeData SceneParser::createCube(glm::vec3 location) {
 
 
 
-void SceneParser::createSphere(glm::vec3 origin, int radius) {
+void SceneParser::createSphere(glm::vec3 origin, float radius) {
     for (int x = 0; x < radius*2 + 1; x++) {
         for (int y = 0; y < radius*2 + 1; y++) {
             for (int z = 0; z < radius*2 + 1; z++) {
@@ -43,12 +43,16 @@ void SceneParser::createSphere(glm::vec3 origin, int radius) {
     }
 }
 
-void SceneParser::createLine(int radius) {
+void SceneParser::createLine(float radius) {
     int distance = glm::floor(glm::distance(point_1, point_2));
     glm::vec3 direction_line = glm::normalize(point_2 - point_1);
     for (int i = 0; i < distance; i++) {
+        float input_radius = radius + sin(i) + sin(float(i) / 2) + sin(9*float(i)) + sin(90*float(i));
         glm::vec3 sphere_center = point_1 + direction_line*float(i);
-        createSphere(sphere_center, radius);
+        sphere_center[0] = sphere_center[0] + sin(i) + sin(10*float(i)) + sin(3*float(i)) + sin(float(i) / 2) + sin(9*float(i)) + sin(90*float(i)) + sin(8*float(i));
+        sphere_center[1] = sphere_center[1] - sin(i) + sin(10*float(i)) + sin(3*float(i)) + sin(float(i) / 2) + sin(9*float(i)) + sin(90*float(i)) + sin(8*float(i));
+        sphere_center[2] = sphere_center[2] + sin(i) + sin(10*float(i)) - sin(3*float(i)) - sin(float(i) / 2) + sin(9*float(i)) + sin(90*float(i)) + sin(8*float(i));
+        createSphere(sphere_center, input_radius);
     }
 }
 
@@ -69,7 +73,7 @@ std::vector<SceneLightData> SceneParser::getLights() {
     return lights_vec;
 }
 
-bool SceneParser::parse(RenderData &renderData, int radius) {
+bool SceneParser::parse(RenderData &renderData, float radius) {
     SceneParser parser;
     parser.point_1 = glm::vec3(0.f,0.f,0.f);
     parser.point_2 = glm::vec3(90.f,-30.f,20.f);
@@ -88,9 +92,6 @@ bool SceneParser::parse(RenderData &renderData, int radius) {
     renderData.material.shininess = 25;
     renderData.lights = parser.getLights();
     renderData.shapes = shape_data;
-    renderData.cameraData.pos = glm::vec4(3.f, 3.f, 3.f, 1.f);
-    renderData.cameraData.look = glm::vec4(-3.f, -3.f, -3.f, 0.f);
-    renderData.cameraData.up = glm::vec4(0.f, 1.f, 0.f, 0.f);
     renderData.cameraData.heightAngle = 0.52f;
     renderData.globalData.kd = 0.5f;
     renderData.globalData.ka = 0.5f;

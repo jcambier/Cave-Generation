@@ -79,5 +79,6 @@ private:
     void makeFBO();
     void paintTexture(GLuint texture);
     void createOffsets();
+    int numInstances = 256;
     glm::vec3 translations[100000];
 };
