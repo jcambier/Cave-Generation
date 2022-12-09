@@ -36,6 +36,7 @@ uniform vec3 c_specular;
 
 vec4 directional(int index, vec4 norm) {
     vec4 color = vec4(0.0,0.0,0.0,1.0);
+
 //    vec4 dir_to_light = -1.f*normalize(m_lightDir[index]);
 //            if(dot(norm, dir_to_light) > 0) {
 //                color = color + c_light[index]*(m_kd*dot(norm, dir_to_light)*vec4(c_diffuse,0.0));
