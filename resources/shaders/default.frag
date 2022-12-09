@@ -1,5 +1,8 @@
 #version 330 core
 
+uniform sampler2D stoneSampler;
+in vec2 uvCoords;
+
 // Task 5: declare "in" variables for the world-space position and normal,
 //         received post-interpolation from the vertex shader
 layout(location = 0) in vec3 world_pos_in;
@@ -33,10 +36,12 @@ uniform vec3 c_specular;
 
 vec4 directional(int index, vec4 norm) {
     vec4 color = vec4(0.0,0.0,0.0,1.0);
-    vec4 dir_to_light = -1.f*normalize(m_lightDir[index]);
-            if(dot(norm, dir_to_light) > 0) {
-                color = color + c_light[index]*(m_kd*dot(norm, dir_to_light)*vec4(c_diffuse,0.0));
-            }
+//    vec4 dir_to_light = -1.f*normalize(m_lightDir[index]);
+//            if(dot(norm, dir_to_light) > 0) {
+//                color = color + c_light[index]*(m_kd*dot(norm, dir_to_light)*vec4(c_diffuse,0.0));
+//            }
+    color = color + m_kd * texture(stoneSampler, uvCoords); /* Texture in place of diffuse */
+
             vec3 light_to_pos = normalize(vec3(m_lightDir[index][0], m_lightDir[index][1], m_lightDir[index][2]));
             // Task 14: add specular component to output color
             vec3 r = normalize(reflect(light_to_pos, normalize(world_norm_in)));
@@ -53,9 +58,12 @@ vec4 point(int index, vec4 norm) {
     vec3 light_to_pos = normalize(-1.f*dir_to_light);
     float distance = distance(vec3(m_lightPos[index][0], m_lightPos[index][1], m_lightPos[index][2]), world_pos_in);
     float f_att = min(1.f,1.f / (atten[index][0]+distance*atten[index][1] + distance*distance*atten[index][2]));
-    if(dot(vec3(norm[0], norm[1], norm[2]), dir_to_light) > 0) {
-        color = color + f_att*c_light[index]*(m_kd*dot(vec3(norm[0], norm[1], norm[2]), dir_to_light)*vec4(c_diffuse,0.0));
-    }
+
+//    if(dot(vec3(norm[0], norm[1], norm[2]), dir_to_light) > 0) {
+//        color = color + f_att*c_light[index]*(m_kd*dot(vec3(norm[0], norm[1], norm[2]), dir_to_light)*vec4(c_diffuse,0.0));
+//    }
+    color = color + m_kd * f_att * texture(stoneSampler, uvCoords); /* Texture in place of diffuse */
+
     vec3 v = normalize(vec3(cam_pos[0],cam_pos[1],cam_pos[2]) - world_pos_in);
     vec3 r = normalize(reflect(light_to_pos, normalize(world_norm_in)));
     if (dot(dir_to_light,vec3(norm[0], norm[1], norm[2])) >= 0) {
@@ -85,10 +93,13 @@ vec4 spot(int index, vec4 norm) {
     } else {
         light_color = vec4(0,0,0,1);
     }
-    if (dot(vec3(norm[0], norm[1], norm[2]), li) >= 0) {
-        vec3 diffuse =  f_att*vec3(light_color[0], light_color[1], light_color[2])*m_kd*(c_diffuse*dot(vec3(norm[0], norm[1], norm[2]), li));
-        color = color + vec4(diffuse, 0.f);
-    }
+
+//    if (dot(vec3(norm[0], norm[1], norm[2]), li) >= 0) {
+//        vec3 diffuse =  f_att*vec3(light_color[0], light_color[1], light_color[2])*m_kd*(c_diffuse*dot(vec3(norm[0], norm[1], norm[2]), li));
+//        color = color + vec4(diffuse, 0.f);
+//    }
+    color = color + m_kd * f_att * texture(stoneSampler, uvCoords); /* Texture in place of diffuse */
+
     vec3 v = normalize(vec3(cam_pos[0],cam_pos[1],cam_pos[2]) - world_pos_in);
     vec3 r = normalize(reflect(light_to_pos, normalize(world_norm_in)));
     if (dot(vec3(norm[0], norm[1], norm[2]),li) >=0) {
@@ -111,5 +122,6 @@ void main() {
             color = color + spot(i, norm_4);
         }
     }
+    //color = texture(stoneSampler, uvCoords);
     fragColor = color;
 }

@@ -68,6 +68,7 @@ qt6_add_resources(${PROJECT_NAME} "Resources"
     PREFIX
         "/"
     FILES
+        resources/images/stone_texture.png
         resources/shaders/default.frag
         resources/shaders/default.vert
         resources/shaders/texture.frag
