@@ -24,25 +24,25 @@ void MainWindow::initialize() {
     font.setPointSize(12);
     font.setBold(true);
     QLabel *tesselation_label = new QLabel(); // Parameters label
-    tesselation_label->setText("Tesselation");
+    tesselation_label->setText("Options");
     tesselation_label->setFont(font);
-    QLabel *camera_label = new QLabel(); // Camera label
-    camera_label->setText("Camera");
-    camera_label->setFont(font);
-    QLabel *filters_label = new QLabel(); // Filters label
-    filters_label->setText("Filters");
-    filters_label->setFont(font);
-    QLabel *ec_label = new QLabel(); // Extra Credit label
-    ec_label->setText("Extra Credit");
-    ec_label->setFont(font);
+//    QLabel *camera_label = new QLabel(); // Camera label
+//    camera_label->setText("Camera");
+//    camera_label->setFont(font);
+//    QLabel *filters_label = new QLabel(); // Filters label
+//    filters_label->setText("Filters");
+//    filters_label->setFont(font);
+//    QLabel *ec_label = new QLabel(); // Extra Credit label
+//    ec_label->setText("Extra Credit");
+//    ec_label->setFont(font);
     QLabel *param1_label = new QLabel(); // Parameter 1 label
     param1_label->setText("Radius:");
     QLabel *param2_label = new QLabel(); // Parameter 2 label
-    param2_label->setText("Parameter 2:");
-    QLabel *near_label = new QLabel(); // Near plane label
-    near_label->setText("Near Plane:");
-    QLabel *far_label = new QLabel(); // Far plane label
-    far_label->setText("Far Plane:");
+    param2_label->setText("Seed:");
+//    QLabel *near_label = new QLabel(); // Near plane label
+//    near_label->setText("Near Plane:");
+//    QLabel *far_label = new QLabel(); // Far plane label
+//    far_label->setText("Far Plane:");
 
 
 
@@ -130,13 +130,13 @@ void MainWindow::initialize() {
     farBox->setValue(100.f);
 
     // Adds the slider and number box to the parameter layouts
-    lnear->addWidget(nearSlider);
-    lnear->addWidget(nearBox);
-    nearLayout->setLayout(lnear);
+//    lnear->addWidget(nearSlider);
+//    lnear->addWidget(nearBox);
+//    nearLayout->setLayout(lnear);
 
-    lfar->addWidget(farSlider);
-    lfar->addWidget(farBox);
-    farLayout->setLayout(lfar);
+//    lfar->addWidget(farSlider);
+//    lfar->addWidget(farBox);
+//    farLayout->setLayout(lfar);
 
     // Extra Credit:
     ec1 = new QCheckBox();
@@ -160,20 +160,20 @@ void MainWindow::initialize() {
     vLayout->addWidget(p1Layout);
     vLayout->addWidget(param2_label);
     vLayout->addWidget(p2Layout);
-    vLayout->addWidget(camera_label);
-    vLayout->addWidget(near_label);
-    vLayout->addWidget(nearLayout);
-    vLayout->addWidget(far_label);
-    vLayout->addWidget(farLayout);
-    vLayout->addWidget(filters_label);
-    vLayout->addWidget(filter1);
-    vLayout->addWidget(filter2);
+//    vLayout->addWidget(camera_label);
+//    vLayout->addWidget(near_label);
+//    vLayout->addWidget(nearLayout);
+//    vLayout->addWidget(far_label);
+//    vLayout->addWidget(farLayout);
+//    vLayout->addWidget(filters_label);
+//    vLayout->addWidget(filter1);
+//    vLayout->addWidget(filter2);
     // Extra Credit:
-    vLayout->addWidget(ec_label);
-    vLayout->addWidget(ec1);
-    vLayout->addWidget(ec2);
-    vLayout->addWidget(ec3);
-    vLayout->addWidget(ec4);
+//    vLayout->addWidget(ec_label);
+//    vLayout->addWidget(ec1);
+//    vLayout->addWidget(ec2);
+//    vLayout->addWidget(ec3);
+//    vLayout->addWidget(ec4);
 
     connectUIElements();
 

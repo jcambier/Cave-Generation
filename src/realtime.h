@@ -90,4 +90,14 @@ private:
     /* Additions for texture mapping */
     QImage m_image;
     GLuint m_stone_texture;
+
+//    glm::vec4 point_1 = glm::vec4(0.f,0.f,0.f, 1.0f);
+//    glm::vec4 point_2 = glm::vec4(90.f,-30.f,20.f, 1.0f);
+//    glm::vec4 point_3 = glm::vec4(10.f, -5.0f, 3.0f, 1.0f);
+//    glm::vec4 point_4 = glm::vec4(80.f, -25.0f, 17.0f, 1.0f);
+
+    glm::vec4 point_1 = glm::vec4(0.f,0.f,0.f, 1.0f);;
+    glm::vec4 point_2 = glm::vec4(10.0f, -50.0f, 30.0f, 1.0f);
+    glm::vec4 point_3 = glm::vec4(80.0f, -60.0f, 17.0f, 1.0f);
+    glm::vec4 point_4 = glm::vec4(90.0f, -30.0f, 20.0f, 1.0f);
 };

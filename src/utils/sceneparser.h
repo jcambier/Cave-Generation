@@ -48,8 +48,11 @@ public:
     // @param filepath    The path of the scene file to load.
     // @param renderData  On return, this will contain the metadata of the loaded scene.
     // @return            A boolean value indicating whether the parse was successful.
-    static bool parse(RenderData &renderData, float radius);
+    static bool parse(RenderData &renderData, float radius, float seed);
     glm::vec3 point_1 = glm::vec3(0.f,0.f,0.f);
     glm::vec3 point_2 = glm::vec3(90.f,-30.f,20.f);
+    glm::vec4 point_3 = glm::vec4(10.f, -5.0f, 3.0f, 1.0f);
+    glm::vec4 point_4 = glm::vec4(80.f, -60.0f, 17.0f, 1.0f);
+    //glm::vec3 point_2 = glm::vec3(270.f,-90.f,60.f);
 
 };

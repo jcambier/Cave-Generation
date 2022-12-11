@@ -37,11 +37,23 @@ uniform vec3 c_specular;
 vec4 directional(int index, vec4 norm) {
     vec4 color = vec4(0.0,0.0,0.0,1.0);
 
-//    vec4 dir_to_light = -1.f*normalize(m_lightDir[index]);
+    vec4 dir_to_light = -1.f*normalize(m_lightDir[index]);
 //            if(dot(norm, dir_to_light) > 0) {
 //                color = color + c_light[index]*(m_kd*dot(norm, dir_to_light)*vec4(c_diffuse,0.0));
 //            }
-            color = color + m_kd * texture(stoneSampler, uvCoords); /* Texture in place of diffuse */
+        vec4 colorToAdd = texture(stoneSampler, uvCoords);
+        float surfaceAngle = dot(norm, dir_to_light);
+        if (surfaceAngle > 0.0f) {
+            if (surfaceAngle > 1.0f) {
+                surfaceAngle = 1.0f;
+            }
+            float blendRed = clamp((0.6f*(colorToAdd[0]) + 0.4f*(m_kd*c_diffuse[0])), 0.0, 1.0);
+            float blendGreen = clamp((0.6f*(colorToAdd[1]) + 0.4f*(m_kd*c_diffuse[1])), 0.0, 1.0);
+            float blendBlue = clamp((0.6f*(colorToAdd[2]) + 0.4f*(m_kd*c_diffuse[2])), 0.0, 1.0);
+            color[0] = clamp(c_light[index][0]*(blendRed)*surfaceAngle, 0.0, 1.0);
+            color[1] = clamp(c_light[index][1]*(blendGreen)*surfaceAngle, 0.0, 1.0);
+            color[2] = clamp(c_light[index][2]*(blendBlue)*surfaceAngle, 0.0, 1.0);
+        }
 
             vec3 light_to_pos = normalize(vec3(m_lightDir[index][0], m_lightDir[index][1], m_lightDir[index][2]));
             // Task 14: add specular component to output color
@@ -63,18 +75,23 @@ vec4 point(int index, vec4 norm) {
 //    if(dot(vec3(norm[0], norm[1], norm[2]), dir_to_light) > 0) {
 //        color = color + f_att*c_light[index]*(m_kd*dot(vec3(norm[0], norm[1], norm[2]), dir_to_light)*vec4(c_diffuse,0.0));
 //    }
+
     vec4 colorToAdd = texture(stoneSampler, uvCoords);
     float surfaceAngle = dot(vec3(norm[0], norm[1], norm[2]), dir_to_light);
-    if (surfaceAngle > 0.0f) {
-        float blendRed = (0.5f*(colorToAdd[0]) + 0.5f*(m_kd*c_diffuse[0]));
-        float blendGreen = (0.5f*(colorToAdd[1]) + 0.5f*(m_kd*c_diffuse[1]));
-        float blendBlue = (0.5f*(colorToAdd[2]) + 0.5f*(m_kd*c_diffuse[2]));
+    //if (surfaceAngle > 0.0f) {
+        if (surfaceAngle < 0.0f) {
+            surfaceAngle = 0.0f;
+        }
+        if (surfaceAngle > 1.0f) {
+            surfaceAngle = 1.0f;
+        }
+        float blendRed = clamp((0.6f*(colorToAdd[0]) + 0.4f*(m_kd*c_diffuse[0])), 0.0, 1.0);
+        float blendGreen = clamp((0.6f*(colorToAdd[1]) + 0.4f*(m_kd*c_diffuse[1])), 0.0, 1.0);
+        float blendBlue = clamp((0.6f*(colorToAdd[2]) + 0.4f*(m_kd*c_diffuse[2])), 0.0, 1.0);
         color[0] = clamp(f_att*c_light[index][0]*(blendRed)*surfaceAngle, 0.0, 1.0);
         color[1] = clamp(f_att*c_light[index][1]*(blendGreen)*surfaceAngle, 0.0, 1.0);
         color[2] = clamp(f_att*c_light[index][2]*(blendBlue)*surfaceAngle, 0.0, 1.0);
-    }
-    //color[1] = clamp(m_kd * f_att * colorToAdd[1] + color[1], 0, 255);
-    //color[2] = clamp(m_kd * f_att * colorToAdd[2] + color[2], 0, 255);
+    //}
 //    color = color + m_kd * f_att * texture(stoneSampler, uvCoords); /* Texture in place of diffuse */
 
     vec3 v = normalize(vec3(cam_pos[0],cam_pos[1],cam_pos[2]) - world_pos);
@@ -111,7 +128,19 @@ vec4 spot(int index, vec4 norm) {
 //        vec3 diffuse =  f_att*vec3(light_color[0], light_color[1], light_color[2])*m_kd*(c_diffuse*dot(vec3(norm[0], norm[1], norm[2]), li));
 //        color = color + vec4(diffuse, 0.f);
 //    }
-    color = color + m_kd * f_att * texture(stoneSampler, uvCoords); /* Texture in place of diffuse */
+    vec4 colorToAdd = texture(stoneSampler, uvCoords);
+    float surfaceAngle = dot(vec3(norm[0], norm[1], norm[2]), li);
+    if (surfaceAngle > 0.0f) {
+        if (surfaceAngle > 1.0f) {
+            surfaceAngle = 1.0f;
+        }
+        float blendRed = clamp((0.6f*(colorToAdd[0]) + 0.4f*(m_kd*c_diffuse[0])), 0.0, 1.0);
+        float blendGreen = clamp((0.6f*(colorToAdd[1]) + 0.4f*(m_kd*c_diffuse[1])), 0.0, 1.0);
+        float blendBlue = clamp((0.6f*(colorToAdd[2]) + 0.4f*(m_kd*c_diffuse[2])), 0.0, 1.0);
+        color[0] = clamp(f_att*light_color[0]*(blendRed)*surfaceAngle, 0.0, 1.0);
+        color[1] = clamp(f_att*light_color[1]*(blendGreen)*surfaceAngle, 0.0, 1.0);
+        color[2] = clamp(f_att*light_color[2]*(blendBlue)*surfaceAngle, 0.0, 1.0);
+    }
 
     vec3 v = normalize(vec3(cam_pos[0],cam_pos[1],cam_pos[2]) - world_pos);
     vec3 r = normalize(reflect(light_to_pos, normalize(world_norm)));
@@ -130,11 +159,14 @@ void main() {
         if (light_type[i] == 0) {
             color = color + directional(i, norm_4);
         } else if (light_type[i] == 1) {
-            color = color + point(i, norm_4);
+            color = color + clamp(point(i, norm_4), 0.0f, 1.0f);
         } else if (light_type[i] == 2) {
             color = color + spot(i, norm_4);
         }
     }
+    color[0] = clamp(color[0], 0.0, 1.0);
+    color[1] = clamp(color[1], 0.0, 1.0);
+    color[2] = clamp(color[2], 0.0, 1.0);
     //color = texture(stoneSampler, uvCoords);
     fragColor = color;
 }

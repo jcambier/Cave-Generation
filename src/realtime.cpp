@@ -295,7 +295,7 @@ void Realtime::resizeGL(int w, int h) {
 
 void Realtime::sceneChanged() {
     SceneParser parser;
-    parser.parse(renderData, settings.shapeParameter1);
+    parser.parse(renderData, settings.shapeParameter1, settings.shapeParameter2);
     renderData.cameraData.aspectRatio = m_asp_ratio;
     renderData.cameraData.updateProjMatrix(settings.nearPlane, settings.farPlane);
     m_proj = renderData.cameraData.m_proj;
@@ -306,7 +306,7 @@ void Realtime::sceneChanged() {
 
 void Realtime::settingsChanged() {
     SceneParser parser;
-    parser.parse(renderData, settings.shapeParameter1);
+    parser.parse(renderData, settings.shapeParameter1, settings.shapeParameter2);
     renderData.cameraData.updateProjMatrix(settings.nearPlane, settings.farPlane);
     createOffsets();
     m_proj = renderData.cameraData.m_proj;
@@ -483,8 +483,9 @@ void Realtime::timerEvent(QTimerEvent *event) {
     }
     /* Testing Bezier (can delete later) */
     else if (m_keyMap[Qt::Key_F]) {
-        m_bezier.updatePos(glm::vec4(-6.0, 4.0, 4.0, 1.0), glm::vec4(-4.0, 5.0, 4.0, 1.0), glm::vec4(-2.0, 5.0, 4.0, 1.0), glm::vec4(0.0, 1.0, 0.0, 1.0), m_bezierInc);
-        m_bezierInc += 0.01;
+        //m_bezier.updatePos(glm::vec4(-6.0, 4.0, 4.0, 1.0), glm::vec4(-4.0, 5.0, 4.0, 1.0), glm::vec4(-2.0, 5.0, 4.0, 1.0), glm::vec4(0.0, 1.0, 0.0, 1.0), m_bezierInc);
+        m_bezier.updatePos(point_1, point_2, point_3, point_4, m_bezierInc);
+        m_bezierInc += 0.0012;
     }
     /* Testing Bezier (can delete later) */
 
