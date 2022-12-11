@@ -7,8 +7,8 @@ layout(location = 1) in vec3 obj_norm;
 
 // Task 5: declare `out` variables for the world-space position and normal,
 //         to be passed to the fragment shader
-layout(location = 0) out vec3 world_pos_out;
-layout(location = 1) out vec3 world_norm_out;
+out vec3 world_pos;
+out vec3 world_norm;
 
 // Task 6: declare a uniform mat4 to store model matrix
 uniform vec3 offsets[256];
@@ -21,14 +21,14 @@ void main() {
     // Task 8: compute the world-space position and normal, then pass them to
     //         the fragment shader using the variables created in task 5
 
-    world_pos_out = offsets[gl_InstanceID] + obj_pos;
-    world_norm_out = obj_norm;
+    world_pos = offsets[gl_InstanceID] + obj_pos;
+    world_norm = obj_norm;
 
 
     // Recall that transforming normals requires obtaining the inverse-transpose of the model matrix!
     // In projects 5 and 6, consider the performance implications of performing this here.
 
     // Task 9: set gl_Position to the object space position transformed to clip space
-    vec4 pos_4 = proj_matrix*view_matrix*vec4(world_pos_out, 1.0);
+    vec4 pos_4 = proj_matrix*view_matrix*vec4(world_pos, 1.0);
     gl_Position = pos_4;
 }
