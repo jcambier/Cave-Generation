@@ -7,6 +7,7 @@
 #endif
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include "utils/bezier.h"
 
 #include <unordered_map>
 #include <QElapsedTimer>
@@ -81,4 +82,12 @@ private:
     void createOffsets();
     int numInstances = 256;
     glm::vec3 translations[100000];
+
+    /* Additions for Bezier */
+    Bezier m_bezier;
+    float m_bezierInc = 0.0; // Used to test functionality of curve
+
+    /* Additions for texture mapping */
+    QImage m_image;
+    GLuint m_stone_texture;
 };

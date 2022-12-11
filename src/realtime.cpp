@@ -76,6 +76,20 @@ void Realtime::initializeGL() {
     // Students: anything requiring OpenGL calls when the program starts should be done here
     m_shader = ShaderLoader::createShaderProgram(":/resources/shaders/default.vert",
                                                  ":/resources/shaders/default.frag");
+    /* Additions for texture mapping */
+    QString stone_filepath = QString(":/resources/images/stone_texture.png");
+    m_image = QImage(stone_filepath);
+    m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
+    glGenTextures(1, &m_stone_texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_stone_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glUseProgram(m_shader);
+    glUniform1i(glGetUniformLocation(m_shader, "stoneSampler"), 0);
     glUseProgram(0);
 
     // Task 11: Fix this "fullscreen" quad's vertex data
@@ -117,6 +131,9 @@ void Realtime::initializeGL() {
     renderData.cameraData.updateViewMatrix(renderData.cameraData.up,
             renderData.cameraData.look, renderData.cameraData.pos);
     createOffsets();
+
+    // Pass camera data to Bezier class
+    m_bezier.setCameraData(&renderData.cameraData);
 }
 
 void Realtime::handleObjects() {
@@ -128,9 +145,13 @@ void Realtime::handleObjects() {
         glBufferData(GL_ARRAY_BUFFER,vbo_cube->size() * sizeof(GLfloat),vbo_cube->data(), GL_STATIC_DRAW);
         glBindVertexArray(m_vao);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,6*sizeof(GLfloat),reinterpret_cast<void *>(0));
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,8*sizeof(GLfloat),reinterpret_cast<void *>(0)); // Edited for uv coordinates
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,6*sizeof(GLfloat),reinterpret_cast<void*>(sizeof(GLfloat)*3));
+        glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,8*sizeof(GLfloat),reinterpret_cast<void*>(sizeof(GLfloat)*3));  // Edited for uv coordinates
+        /* Added new attribute for uv coordinates */
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3,2,GL_FLOAT,GL_FALSE,8*sizeof(GLfloat),reinterpret_cast<void*>(sizeof(GLfloat)*6));
+
         glEnableVertexAttribArray(2);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glGenBuffers(1, &instance_vbo);
@@ -227,6 +248,11 @@ void Realtime::renderShapes() {
         glUniform1f(m_shin_loc, renderData.material.shininess);
         glm::vec4 world_cam = renderData.cameraData.pos;
         GLint m_cam_loc = glGetUniformLocation(m_shader, "cam_pos");
+
+        /* Note: added for texture mapping */
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_stone_texture);
+
         // Draw Command
         glDrawArraysInstanced(GL_TRIANGLES, 0, m_cube.generateShape()->size() / 3, numInstances);
         // Unbind VBO
@@ -245,6 +271,9 @@ void Realtime::paintGL() {
     glUseProgram(m_shader);
     loadLights();
     renderShapes();
+
+    glBindTexture(GL_TEXTURE_2D, 0); /* Note: added for texture mapping */
+
     // Unbind Vertex Array
     glBindVertexArray(0);
     // Deactivate shader program
@@ -452,6 +481,12 @@ void Realtime::timerEvent(QTimerEvent *event) {
     if (m_keyMap[Qt::Key_Control]) {
         press_ctrl(deltaTime);
     }
+    /* Testing Bezier (can delete later) */
+    else if (m_keyMap[Qt::Key_F]) {
+        m_bezier.updatePos(glm::vec4(-6.0, 4.0, 4.0, 1.0), glm::vec4(-4.0, 5.0, 4.0, 1.0), glm::vec4(-2.0, 5.0, 4.0, 1.0), glm::vec4(0.0, 1.0, 0.0, 1.0), m_bezierInc);
+        m_bezierInc += 0.01;
+    }
+    /* Testing Bezier (can delete later) */
 
     update(); // asks for a PaintGL() call to occur
 }

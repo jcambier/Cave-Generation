@@ -18,16 +18,34 @@ void Cube::makeTile(glm::vec3 topLeft,
     glm::vec3 normalBottomLeft = glm::normalize(glm::cross((bottomLeft - bottomRight),(bottomLeft - topLeft)));
     insertVec3(m_vertexData, bottomRight);
     insertVec3(m_vertexData, normalBottomRight);
+    /* Note: added UV coordinates */
+    m_vertexData.push_back(1.0);
+    m_vertexData.push_back(0.0);
+
     insertVec3(m_vertexData, topRight);
     insertVec3(m_vertexData, normalTopRight);
+    m_vertexData.push_back(1.0);
+    m_vertexData.push_back(1.0);
+
     insertVec3(m_vertexData, topLeft);
     insertVec3(m_vertexData, normalTopLeft);
+    m_vertexData.push_back(0.0);
+    m_vertexData.push_back(1.0);
+
     insertVec3(m_vertexData, bottomLeft);
     insertVec3(m_vertexData, normalBottomLeft);
+    m_vertexData.push_back(0.0);
+    m_vertexData.push_back(0.0);
+
     insertVec3(m_vertexData, bottomRight);
     insertVec3(m_vertexData, normalBottomRight);
+    m_vertexData.push_back(1.0);
+    m_vertexData.push_back(0.0);
+
     insertVec3(m_vertexData, topLeft);
     insertVec3(m_vertexData, normalTopLeft);
+    m_vertexData.push_back(0.0);
+    m_vertexData.push_back(1.0);
 }
 
 void Cube::makeFace(glm::vec3 topLeft,
