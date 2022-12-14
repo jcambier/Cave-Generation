@@ -126,9 +126,18 @@ void SceneParser::createLine(float radius, glm::vec3 point_1, glm::vec3 point_2)
 }
 
 std::vector<SceneLightData> SceneParser::getLights() {
+
+    std::vector<SceneLightData> lights_vec;
+
+    SceneLightData light = SceneLightData();
+    light.color = glm::vec4(0.9f,1.f,0.1f,1.f);
+    light.type = LightType::LIGHT_DIRECTIONAL;
+    light.dir = glm::vec4 (-2.0f, 4.0f, -1.0f,0.f);
+
+    lights_vec.push_back(light);
+
     glm::vec3 direction_line = glm::normalize(point_2 - point_1);
     int distance = glm::floor(glm::distance(point_1, point_2));
-    std::vector<SceneLightData> lights_vec;
     //for (int i = 0; i < distance; i += 60) {
     for (int i = 0; i < 12; i += 6) {
         SceneLightData light = SceneLightData();

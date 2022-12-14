@@ -38,6 +38,9 @@ void Realtime::finish() {
     // Students: anything requiring OpenGL calls when the program exits should be done here
     glDeleteBuffers(1,&m_vbo);
     glDeleteVertexArrays(1,&m_vao);
+
+    glDeleteTextures(1, &m_depth_map_texture);
+    glDeleteRenderbuffers(1, &m_depth_map_fbo);
     this->doneCurrent();
 }
 
@@ -56,6 +59,12 @@ void Realtime::initializeGL() {
     renderData.cameraData.pos = glm::vec4(0.f, 0.f, 0.f, 1.f);
     renderData.cameraData.look = glm::vec4(parser.point_2 - parser.point_1, 0.f);
     renderData.cameraData.up = glm::vec4(0.f, 1.f, 0.f, 0.f);
+
+    m_defaultFBO = 2;
+    m_screen_width = size().width() * m_devicePixelRatio;
+    m_screen_height = size().height() * m_devicePixelRatio;
+    m_fbo_width = m_screen_width;
+    m_fbo_height = m_screen_height;
 
     // Initializing GL.
     // GLEW (GL Extension Wrangler) provides access to OpenGL functions.
@@ -76,6 +85,10 @@ void Realtime::initializeGL() {
     // Students: anything requiring OpenGL calls when the program starts should be done here
     m_shader = ShaderLoader::createShaderProgram(":/resources/shaders/default.vert",
                                                  ":/resources/shaders/default.frag");
+
+    m_depth_shader = ShaderLoader::createShaderProgram(":/resources/shaders/depthmap.vert", ":/resources/shaders/depthmap.frag");
+
+
     /* Additions for texture mapping */
     QString stone_filepath = QString(":/resources/images/stone_texture.png");
     m_image = QImage(stone_filepath);
@@ -91,6 +104,9 @@ void Realtime::initializeGL() {
     glUseProgram(m_shader);
     glUniform1i(glGetUniformLocation(m_shader, "stoneSampler"), 0);
     glUseProgram(0);
+
+
+
 
     // Task 11: Fix this "fullscreen" quad's vertex data
 
@@ -134,6 +150,49 @@ void Realtime::initializeGL() {
 
     // Pass camera data to Bezier class
     m_bezier.setCameraData(&renderData.cameraData);
+
+    DepthMappingFBO();
+}
+
+const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+
+
+void Realtime::DepthMappingFBO(){
+    // Generate and bind an empty texture, set its min/mag filter interpolation, then unbind
+
+    glGenTextures(1, &m_depth_map_texture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_depth_map_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Set the texture.frag uniform for our texture
+    glUseProgram(m_shader);
+    glUniform1i(glGetUniformLocation(m_shader, "shadowMap"),1);
+    glUseProgram(0);
+
+
+    // Generate and bind an FBO
+
+    glGenFramebuffers(1, &m_depth_map_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_depth_map_fbo);
+
+    // Adding my texture as a color attachment, and my renderbuffer as a depth+stencil attachment, to my FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_map_texture, 0);
+
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    // Unbind the FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
 }
 
 void Realtime::handleObjects() {
@@ -193,6 +252,24 @@ void Realtime::loadLights() {
         GLint light_angle_loc = glGetUniformLocation(m_shader,arg_6.data());
         std::string arg_7 = "m_penumbra[" + std::to_string(i) + "]";
         GLint light_penumbra_loc = glGetUniformLocation(m_shader,arg_7.data());
+
+
+        float near_plane = 1.0f, far_plane = 7.5f;
+
+       // glm::vec3 lightInvDir = glm::vec3(0.5f,2,2);
+        glm::vec3 lightInvDir = glm::vec3(-2.0f, 4.0f, -1.0f);
+
+         // Compute the MVP matrix from the light's point of view
+         glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10,-10,10,near_plane, far_plane);
+         glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+         glm::mat4 depthModelMatrix = glm::mat4(1.0);
+         glm::mat4 lightSpaceMatrix = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+        std::string lightMatrixStr = "lightSpaceMatrix";
+        GLint loc8 = glGetUniformLocation(m_shader, lightMatrixStr.c_str());
+        glUniformMatrix4fv(loc8, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+
+
         if (light.type == LightType::LIGHT_DIRECTIONAL) {
             glUniform1i(light_type_loc, 0);
         } else if (light.type == LightType::LIGHT_POINT) {
@@ -260,13 +337,78 @@ void Realtime::renderShapes() {
     }
 }
 
+void Realtime::renderZBuffer(){
+
+    for (int i = 0; i < renderData.shapes.size(); i += numInstances) {
+        for (unsigned int j = 0; j < numInstances; j++) {
+            std::string arg = "offsets[" + std::to_string(j) + "]";
+            glUniform3fv(glGetUniformLocation(m_shader, arg.data()), 1, &translations[i + j][0]);
+        }
+        glBindVertexArray(m_vao);
+        // Pass model matrix to shader program
+        // Pass view and projection matrices
+
+        glm::vec3 lightInvDir = glm::vec3(-2.0f, 4.0f, -1.0f);
+
+        float near_plane = 1.0f, far_plane = 7.5f;
+
+         // Compute the MVP matrix from the light's point of view
+         glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10,-10,10,near_plane, far_plane);
+         glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+         glm::mat4 depthModelMatrix = glm::mat4(1.0);
+         glm::mat4 lightSpaceMatrix = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+
+        std::string dirStr = "lightSpaceMatrix";
+        GLint loc1 = glGetUniformLocation(m_depth_shader, dirStr.c_str());
+        glUniformMatrix4fv(loc1, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+
+        // Draw Command
+        glDrawArraysInstanced(GL_TRIANGLES, 0, m_cube.generateShape()->size() / 3, numInstances);
+        // Unbind VBO
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
 void Realtime::paintGL() {
+
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_depth_map_fbo);
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
     m_cube.updateParams(2);
     // Generate VAOs and VBOs
     glGenBuffers(1, &m_vbo);
     glGenVertexArrays(1, &m_vao);
     handleObjects();
+
+    glUseProgram(m_depth_shader);
+    renderZBuffer();
+
+    // Unbind Vertex Array
+    glBindVertexArray(0);
+
+    glUseProgram(0);
+
+
+    // Bind the default framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
+    glViewport(0, 0, m_screen_width, m_screen_height);
+
+   // Clear the color and depth buffers
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_depth_map_texture);
+
+    m_cube.updateParams(2);
+    // Generate VAOs and VBOs
+    glGenBuffers(1, &m_vbo);
+    glGenVertexArrays(1, &m_vao);
+    handleObjects();
+
     // Create shader program
     glUseProgram(m_shader);
     loadLights();
@@ -289,8 +431,18 @@ void Realtime::resizeGL(int w, int h) {
     renderData.cameraData.updateProjMatrix(settings.nearPlane, settings.farPlane);
     m_proj = renderData.cameraData.m_proj;
 
+    glDeleteTextures(1, &m_depth_map_texture);
+    glDeleteFramebuffers(1, &m_depth_map_fbo);
+
+
     m_screen_width = size().width() * m_devicePixelRatio;
     m_screen_height = size().height() * m_devicePixelRatio;
+    m_fbo_width = size().width();
+    m_fbo_height = size().height();
+    // Regenerate the FBO
+    //makeFBO();
+
+    DepthMappingFBO();
 }
 
 void Realtime::sceneChanged() {

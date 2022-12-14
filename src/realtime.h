@@ -54,6 +54,8 @@ private:
     int m_devicePixelRatio;
 
     GLuint m_shader; // Stores id of shader program
+    GLuint m_depth_shader; // Stores id of shader program
+
     GLuint m_texture_shader;
     int m_fbo_width;
     int m_fbo_height;
@@ -82,6 +84,12 @@ private:
     void createOffsets();
     int numInstances = 256;
     glm::vec3 translations[100000];
+
+
+    GLuint m_depth_map_texture;
+    GLuint m_depth_map_fbo;
+    void DepthMappingFBO();
+    void renderZBuffer();
 
     /* Additions for Bezier */
     Bezier m_bezier;

@@ -7,6 +7,7 @@ in vec2 uvCoords;
 //         received post-interpolation from the vertex shader
 in vec3 world_pos;
 in vec3 world_norm;
+in vec4 FragPosLightSpace;
 
 // Task 10: declare an out vec4 for your output color
 out vec4 fragColor;
@@ -34,7 +35,40 @@ uniform float m_shin;
 uniform vec4 cam_pos;
 uniform vec3 c_specular;
 
+uniform sampler2D shadowMap;
+
+
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightDir)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float bias = max(0.05 * (1.0 - dot(normalize(world_norm), lightDir)), 0.005);
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 2; ++x)
+    {
+        for(int y = -1; y <= 2; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 16.0;
+
+    return shadow;
+}
+
+
 vec4 directional(int index, vec4 norm) {
+
     vec4 color = vec4(0.0,0.0,0.0,1.0);
 
     vec4 dir_to_light = -1.f*normalize(m_lightDir[index]);
@@ -56,6 +90,7 @@ vec4 directional(int index, vec4 norm) {
         }
 
             vec3 light_to_pos = normalize(vec3(m_lightDir[index][0], m_lightDir[index][1], m_lightDir[index][2]));
+
             // Task 14: add specular component to output color
             vec3 r = normalize(reflect(light_to_pos, normalize(world_norm)));
             vec3 e = normalize(vec3(cam_pos[0],cam_pos[1],cam_pos[2]) - world_pos);
@@ -157,7 +192,10 @@ void main() {
     vec4 norm_4 = vec4(normalize(world_norm),0.0);
     for (int i = 0; i<total_lights; i++) {
         if (light_type[i] == 0) {
-            color = color + directional(i, norm_4);
+
+            float shadow = ShadowCalculation(FragPosLightSpace, normalize(vec3(m_lightDir[i])));
+            color = color + (1.0 - shadow)*directional(i, norm_4);
+
         } else if (light_type[i] == 1) {
             color = color + clamp(point(i, norm_4), 0.0f, 1.0f);
         } else if (light_type[i] == 2) {
