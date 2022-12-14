@@ -130,10 +130,10 @@ std::vector<SceneLightData> SceneParser::getLights() {
     int distance = glm::floor(glm::distance(point_1, point_2));
     std::vector<SceneLightData> lights_vec;
     //for (int i = 0; i < distance; i += 60) {
-    for (int i = 0; i < 12; i += 6) {
+    for (int i = 0; i < 11; i += 2) {
         SceneLightData light = SceneLightData();
         light.color = glm::vec4(.5f,.5f,.5f,1.f);
-        light.function = glm::vec3(1.f, 0.f, 0.f);
+        light.function = glm::vec3(1.f,0.0f,0.0f);
         //light.pos = glm::vec4(point_1 + float(i)*direction_line, 1.0);
         light.pos = glm::vec4(x_coords[i], y_coords[i], z_coords[i], 1.0f);
         light.type = LightType::LIGHT_POINT;
