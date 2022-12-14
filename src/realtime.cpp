@@ -257,7 +257,8 @@ void Realtime::loadLights() {
         float near_plane = 1.0f, far_plane = 7.5f;
 
        // glm::vec3 lightInvDir = glm::vec3(0.5f,2,2);
-        glm::vec3 lightInvDir = glm::vec3(-2.0f, 4.0f, -1.0f);
+        //glm::vec3 lightInvDir = glm::vec3(-2.0f, 4.0f, -1.0f);
+        glm::vec3 lightInvDir = glm::vec3(renderData.lights[0].dir);
 
          // Compute the MVP matrix from the light's point of view
          glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10,-10,10,near_plane, far_plane);
@@ -348,7 +349,8 @@ void Realtime::renderZBuffer(){
         // Pass model matrix to shader program
         // Pass view and projection matrices
 
-        glm::vec3 lightInvDir = glm::vec3(-2.0f, 4.0f, -1.0f);
+        //glm::vec3 lightInvDir = glm::vec3(-2.0f, 4.0f, -1.0f);
+        glm::vec3 lightInvDir = glm::vec3(renderData.lights[0].dir);
 
         float near_plane = 1.0f, far_plane = 7.5f;
 

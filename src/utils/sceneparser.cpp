@@ -130,11 +130,22 @@ std::vector<SceneLightData> SceneParser::getLights() {
     std::vector<SceneLightData> lights_vec;
 
     SceneLightData light = SceneLightData();
-    light.color = glm::vec4(0.9f,1.f,0.1f,1.f);
+    light.color = glm::vec4(0.5f,0.5f,0.5f,1.f);
     light.type = LightType::LIGHT_DIRECTIONAL;
-    light.dir = glm::vec4 (-2.0f, 4.0f, -1.0f,0.f);
+    //light.dir = glm::vec4 (-2.0f, 4.0f, -1.0f,0.f);
+    light.dir = glm::normalize(point_3);
+    //light.dir = glm::normalize(glm::vec4(0.5, -1.0, 0.5, 0.0));
+    light.function = glm::vec3(1.f, 1.f, 1.f);
 
     lights_vec.push_back(light);
+
+//    SceneLightData light2 = SceneLightData();
+//    light2.color = glm::vec4(0.1f,1.f,0.9f,1.f);
+//    light2.type = LightType::LIGHT_DIRECTIONAL;
+//    light2.dir = glm::normalize(glm::vec4(0.5, 1.0, 0.5, 0.0));
+//    light2.function = glm::vec3(1.f, 1.f, 1.f);
+//    lights_vec.push_back(light2);
+
 
     glm::vec3 direction_line = glm::normalize(point_2 - point_1);
     int distance = glm::floor(glm::distance(point_1, point_2));
@@ -142,11 +153,13 @@ std::vector<SceneLightData> SceneParser::getLights() {
     for (int i = 0; i < 12; i += 6) {
         SceneLightData light = SceneLightData();
         light.color = glm::vec4(.5f,.5f,.5f,1.f);
-        light.function = glm::vec3(1.f, 0.f, 0.f);
+        light.function = glm::vec3(1.f, 1.f, 0.f);
+        //light.dir = glm::vec4 (-2.0f, 4.0f, -1.0f,0.f);
         //light.pos = glm::vec4(point_1 + float(i)*direction_line, 1.0);
         light.pos = glm::vec4(x_coords[i], y_coords[i], z_coords[i], 1.0f);
         light.type = LightType::LIGHT_POINT;
-        lights_vec.push_back(light);
+        //light.type = LightType::LIGHT_DIRECTIONAL;
+        //lights_vec.push_back(light);
     }
 
     return lights_vec;
